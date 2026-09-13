@@ -1,14 +1,11 @@
 import streamlit as st
-
-st.set_page_config(
-    page_title="Next Word Prediction",
-    layout="centered"
-)
-
 import pickle
 import numpy as np
 from tensorflow.keras.models import load_model
 from tensorflow.keras.preprocessing.sequence import pad_sequences
+
+# Must be the very first Streamlit command
+st.set_page_config(page_title="Next Word Prediction", layout="centered")
 
 
 @st.cache_resource
@@ -20,13 +17,13 @@ def load_resources():
         max_len = pickle.load(f)
     return model, tokenizer, max_len
 
+
 model, tokenizer, max_len = load_resources()
 
 
 def predict_next_word(text):
     sequence = tokenizer.texts_to_sequences([text])[0]
-    sequence = pad_sequences([sequence], maxlen=max_len-1, padding='pre')
-
+    sequence = pad_sequences([sequence], maxlen=max_len - 1, padding="pre")
     preds = model.predict(sequence, verbose=0)
     predicted_index = np.argmax(preds)
 
@@ -35,7 +32,6 @@ def predict_next_word(text):
             return word
     return ""
 
-st.set_page_config(page_title="Next Word Prediction", layout="centered")
 
 st.title("🧠 Next Word Prediction (RNN)")
 st.write("Enter a sentence and the model will predict the **next word**.")
@@ -47,8 +43,10 @@ if st.button("Predict Next Word"):
         st.warning("Please enter some text.")
     else:
         next_word = predict_next_word(user_input)
-        st.success(f"**Predicted Next Word:** {next_word}")
-
+        if next_word:
+            st.success(f"**Predicted Next Word:** {next_word}")
+        else:
+            st.info("Couldn't find a confident prediction for that input.")
 
 st.markdown("---")
 st.caption("RNN-based Next Word Prediction using Streamlit")
